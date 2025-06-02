@@ -15,7 +15,7 @@ crash.log
 *.pub
 
 # SSH keys (your private/public keys)
-.ssh/*
+terraform/.ssh/*
 
 # Any local override or environment files
 terraform.tfvars

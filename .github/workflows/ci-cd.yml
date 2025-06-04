@@ -62,6 +62,9 @@ jobs:
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
+      
+      - name: Set KUBECONFIG environment variable
+        run: echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
 
       - name: Deploy using Helm
         run: |

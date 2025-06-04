@@ -45,16 +45,17 @@ jobs:
       - name: Push Docker image
         run: docker push $IMAGE_NAME:latest
 
-      - name: Setup kubectl
+      - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
           version: 'latest'
 
-      - name: Configure Kubeconfig
+      - name: Configure kubeconfig
         run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > ~/.kube/config
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_BASE64 }}" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
+          kubectl config set-cluster default --insecure-skip-tls-verify=true
 
       - name: Deploy to K3s Cluster
         run: |

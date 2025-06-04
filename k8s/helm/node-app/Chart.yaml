@@ -1,0 +1,5 @@
+apiVersion: v2
+name: signiance
+description: Helm chart for Signiance app
+version: 1.0.0
+appVersion: "1.0"

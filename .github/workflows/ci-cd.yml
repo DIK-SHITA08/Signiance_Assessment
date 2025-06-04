@@ -1,19 +1,21 @@
-name: CI/CD Pipeline
+name: CI/CD Helm Deployment
 
 on:
   push:
     branches:
-      - main  # or your working branch
+      - main
+
+env:
+  IMAGE_NAME: disidesh/signiance
+  IMAGE_TAG: latest
+  RELEASE_NAME: signiance-app
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
-    env:
-      IMAGE_NAME: disidesh/signiance
-
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Node.js
@@ -29,7 +31,7 @@ jobs:
         working-directory: ./app
         run: npm test || echo "No tests defined"
 
-      - name: Run linter
+      - name: Lint code
         working-directory: ./app
         run: npm run lint || echo "No lint script defined"
 
@@ -40,13 +42,18 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker image
-        run: docker build -t $IMAGE_NAME:latest ./app
+        run: docker build -t $IMAGE_NAME:$IMAGE_TAG ./app
 
       - name: Push Docker image
-        run: docker push $IMAGE_NAME:latest
+        run: docker push $IMAGE_NAME:$IMAGE_TAG
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
         with:
           version: 'latest'
 
@@ -55,9 +62,12 @@ jobs:
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
-          kubectl config set-cluster default --insecure-skip-tls-verify=true
 
-      - name: Deploy to K3s Cluster
+      - name: Deploy using Helm
         run: |
-          kubectl apply --validate=false -f k8s/deployment.yaml
-          kubectl apply --validate=false -f k8s/service.yaml
+          helm upgrade --install $RELEASE_NAME ./helm \
+            --set image.repository=$IMAGE_NAME \
+            --set image.tag=$IMAGE_TAG \
+            --atomic \
+            --wait \
+            --timeout 5m

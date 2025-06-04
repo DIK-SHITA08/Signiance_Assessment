@@ -28,4 +28,4 @@ jobs:
           context: ./app        
           file: ./app/Dockerfile
           push: true
-          tags: disidesh/Signiance:latest
+          tags: disidesh/signiance:latest

@@ -20,3 +20,4 @@ terraform/.ssh/*
 # Any local override or environment files
 terraform.tfvars
 *.auto.tfvars
+terraform/.ssh/k3s_key

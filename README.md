@@ -125,7 +125,7 @@ sudo apt install ansible -y
 1. Ensure your EC2 private key is saved under:
 
 ```bash
-/home/<your-username>/.ssh/my-key.pem
+/home/<your-username>/.ssh/k3s-key
 ```
  
  you can copy from you local system 
@@ -136,7 +136,7 @@ sudo apt install ansible -y
 2. Change file permission (if needed):
 
 ```bash
-chmod 600 ~/.ssh/my-key.pem
+chmod 600 ~/.ssh/k3s-key
 ```
 
 3. Run your Ansible playbook using:

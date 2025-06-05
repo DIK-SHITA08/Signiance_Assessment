@@ -81,7 +81,81 @@ This will create an EC2 instance and security groups.
 
 ---
 
-## 📊 Step 6: Monitoring (Prometheus + Grafana)
+Here is a complete `README.md` file format for **Step 6: Ansible Automation**, tailored to your DevOps project setup. You can copy this directly into a file named `README.md`:
+
+````markdown
+
+# 🔧 Step 6: Ansible Automation
+
+---
+
+## ✅ Prerequisites
+
+- Windows 10/11 system with administrator access or linux machine 
+- Internet connection
+- EC2 private key file (e.g., `my-key.pem`)
+- Git installed (optional but recommended)
+
+---
+
+##  Install WSL
+
+Open **PowerShell as Administrator** and run the following command:
+
+```powershell
+wsl --install
+````
+
+> 📌 **Note:** if you have linux than you can directly copy playbooks and run it.
+
+Reboot your computer when prompted. After reboot, WSL will install Ubuntu or prompt you to choose a Linux distribution.
+
+---
+
+
+##  Install Ansible
+
+In the Ubuntu terminal, execute the following commands:
+
+```bash
+sudo apt update
+sudo apt install software-properties-common -y
+sudo add-apt-repository --yes --update ppa:ansible/ansible
+sudo apt install ansible -y
+```
+---
+
+## Running Ansible Playbooks
+
+1. Ensure your EC2 private key is saved under:
+
+```bash
+/home/<your-username>/.ssh/my-key.pem
+```
+ 
+ you can copy from you local system 
+ ```bash
+ ssh -i ~/.ssh/k3s-key ubuntu@54.92.134.209
+```
+
+2. Change file permission (if needed):
+
+```bash
+chmod 600 ~/.ssh/my-key.pem
+```
+
+3. Run your Ansible playbook using:
+
+```bash
+ansible-playbook -i inventory.ini playbook.yml
+```
+
+Replace `inventory.ini` and `playbook.yml` 
+
+---
+
+
+## 📊 Step 7: Monitoring (Prometheus + Grafana)
 
 1. Add Helm repos and install monitoring tools:
    ```bash

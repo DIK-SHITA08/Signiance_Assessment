@@ -1,0 +1,25 @@
+- name: Provision EC2 Instance
+  hosts: dev
+  become: true
+  tasks:
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+        update_cache: true
+
+    - name: Install K3s (Kubernetes)
+      shell: curl -sfL https://get.k3s.io | sh -
+
+    - name: Enable Docker service
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Enable K3s service
+      systemd:
+        name: k3s
+        enabled: yes
+        state: started
+        

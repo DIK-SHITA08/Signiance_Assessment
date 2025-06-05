@@ -1,0 +1,141 @@
+DevOps Project Documentation: End-to-End Infrastructure, App Deployment & Monitoring
+ Overview
+This project demonstrates a full-stack DevOps pipeline—starting from infrastructure provisioning using Terraform, Linux hardening, Docker app deployment, CI/CD automation via GitHub Actions, Kubernetes deployment with Helm, and ending with monitoring using Prometheus & Grafana.
+________________________________________
+ Step 1: Infrastructure Provisioning with Terraform
+ Prerequisites
+•	Terraform installed locally
+•	AWS CLI configured (aws configure)
+•	IAM user with EC2, VPC, and IAM permissions
+•	SSH key pair:
+•	ssh-keygen -t rsa -b 4096 -f ~/.ssh/k3s_key
+Project Structure (Terraform Modular Approach)
+•	modules/
+o	ec2_instance/
+o	security_group/
+o	security_group_id/
+•	main.tf, variables.tf, outputs.tf in root for orchestration
+ Terraform Commands
+cd terraform/
+terraform init
+terraform validate
+terraform fmt
+terraform plan
+terraform apply
+________________________________________
+ Step 2: Linux Hardening & Setup
+ SSH into EC2
+ssh -i "./.ssh/k3s_key" ubuntu@<your-ec2-public-ip>
+ Hardening Scripts
+Clone the repo or manually copy scripts from linux_hardening/:
+1.	Disable root SSH login
+2.	Add non-root hardened user
+3.	Configure UFW firewall
+4.	Install Fail2Ban
+5.	Setup log rotation with logrotate
+ Summary of Hardened Setup
+•	✅ Root SSH login disabled
+•	✅ Hardened user added with sudo & SSH access
+•	✅ UFW firewall configured
+•	✅ Fail2Ban installed for brute-force protection
+•	✅ Logrotate configured
+________________________________________
+ Step 3: Docker App Deployment
+ App Directory Structure
+Repo: Signiance_Assessment
+app/
+├── Dockerfile
+├── index.js
+└── package.json
+ Local Docker Deployment
+cd app/
+docker build -t signiance-node-app .
+docker run -p 3000:3000 signiance-node-app
+ Pushing to Docker Hub
+docker login
+docker tag signiance-node-app your-dockerhub-username/app-name:tag
+docker push your-dockerhub-username/app-name:tag
+________________________________________
+ Step 4: CI/CD with GitHub Actions
+ GitHub Workflow
+Path: .github/workflows/ci-cd.yaml
+ Modify
+•	Replace Docker image name with yours
+•	Comment/uncomment appropriate deployment phases
+•	Add GitHub Secrets:
+o	DOCKER_USERNAME
+o	DOCKER_PASSWORD
+Trigger
+Push to GitHub → Check Actions tab for workflow status
+________________________________________
+ Step 5: Kubernetes + Helm Deployment
+ K3s Setup on EC2
+chmod +x scripts/setup_k3s.sh
+./scripts/setup_k3s.sh
+ Kubeconfig GitHub Secret
+cat ~/.kube/config | base64 -w 0
+# Add to GitHub Secrets as KUBE_CONFIG_DATA
+ Helm Installation on Server
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+ Helm Features in values.yaml
+•	Ingress (NGINX)
+•	ConfigMaps & Secrets
+•	Resource requests & limits
+•	Liveness & readiness probes
+•	HPA (Horizontal Pod Autoscaler)
+________________________________________
+ Step 6: Ansible Automation
+
+If tour local system is windows than follow this other wise skip this step
+Install Ansible on to your local system :
+ 1: Install Windows Subsystem for Linux (WSL)
+1.	Open PowerShell as Administrator and run:
+       wsl --install
+2.	Reboot your machine when prompted.
+3.	After reboot, it will install Ubuntu (or prompt you to choose a distro).
+________________________________________
+ 2: Open Ubuntu (WSL)
+•	Search for “Ubuntu” in your Start Menu and launch it.
+•	It will ask you to create a username and password for the Linux environment
+ 3: Update and Install Ansible
+In your Ubuntu (WSL) terminal, run:
+sudo apt update
+sudo apt install software-properties-common -y
+sudo add-apt-repository --yes --update ppa:ansible/ansible
+sudo apt install ansible -y
+________________________________________
+4: Verify Ansible
+ansible --version
+SSH into your EC2 using private key (store under /home/<username>/.ssh)
+Run playbooks like this:
+ansible-playbook -i inventory.ini playbook.yml
+
+Step 7: Monitoring with Prometheus & Grafana
+ Helm Repos & Namespace
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+kubectl create namespace monitoring
+ Prometheus & Grafana Installation
+helm install prometheus prometheus-community/prometheus --namespace monitoring
+
+helm install grafana grafana/grafana \
+  --namespace monitoring \
+  --set adminPassword='admin' \
+  --set service.type=NodePort
+ Access Monitoring UIs
+kubectl get svc -n monitoring
+•	Grafana: http://:32000
+•	Prometheus: http://:32001
+Grafana Setup
+•	Login: admin/admin
+•	Verify Prometheus data source (auto-configured)
+•	Import dashboard: Kubernetes Monitoring (ID: 6417)
+________________________________________
+ Common Issues & Fixes
+Issue	Cause	Resolution
+1. SSH Key Exposure	.ssh/k3s_key committed	Removed using git filter-branch, regenerated new keys
+2. TLS Certificate Error	kubeconfig used public IP	Replaced with private IP, used --validate=false
+3. Ingress Not Working	No domain, port not open	Used NodePort for testing
+4. Pod Eviction (Grafana)	Low EC2 memory	Removed old Docker images, suggested t3.large+ or use EKS/ECS
+________________________________________
+

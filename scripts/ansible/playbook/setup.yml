@@ -1,0 +1,96 @@
+---
+- name: Setup Docker, Kubernetes and Monitoring on EC2
+  hosts: ec2
+  become: yes
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name: "{{ packages }}"
+        state: present
+        update_cache: yes
+      vars:
+        packages:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - software-properties-common
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: latest
+        update_cache: yes
+
+    - name: Enable and start Docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Add Kubernetes apt key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Add Kubernetes repository
+      apt_repository:
+        repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+
+    - name: Install Kubernetes tools (kubeadm, kubelet, kubectl)
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - kubelet
+        - kubeadm
+        - kubectl
+
+    - name: Hold Kubernetes packages at current version
+      apt:
+        name: "{{ item }}"
+        state: present
+        allow_downgrade: yes
+        update_cache: yes
+        autoremove: no
+        force: yes
+      loop:
+        - kubelet
+        - kubeadm
+        - kubectl
+
+    - name: Enable monitoring with Node Exporter
+      shell: |
+        useradd --no-create-home --shell /bin/false node_exporter
+        wget https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz
+        tar xvf node_exporter-1.6.1.linux-amd64.tar.gz
+        cp node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin/
+        chown node_exporter:node_exporter /usr/local/bin/node_exporter
+        tee /etc/systemd/system/node_exporter.service > /dev/null <<EOL
+        [Unit]
+        Description=Node Exporter
+        After=network.target
+
+        [Service]
+        User=node_exporter
+        ExecStart=/usr/local/bin/node_exporter
+
+        [Install]
+        WantedBy=default.target
+        EOL
+        systemctl daemon-reexec
+        systemctl enable node_exporter
+        systemctl start node_exporter

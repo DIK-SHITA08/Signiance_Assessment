@@ -1,12 +1,11 @@
-# Architecture diagram
-![image](https://github.com/user-attachments/assets/3a73ede3-71ce-4ebe-81e5-b72c43c0fe91)
-
-
 # 🚀 DevOps Project: Infra, Deployment & Monitoring
 
 This repo shows how to set up infrastructure, secure your server, deploy a Node.js app using Docker, automate with GitHub Actions, and run it on Kubernetes with monitoring.
 
 ---
+
+# Architecture diagram
+![image](https://github.com/user-attachments/assets/3a73ede3-71ce-4ebe-81e5-b72c43c0fe91)
 
 ## 🔧 Step 1: Set Up Infrastructure (Terraform)
 
@@ -79,11 +78,7 @@ This will create an EC2 instance and security groups.
    ```
 3. Uncomment the Helm section in the GitHub workflow and push to GitHub.
 
----
 
-Here is a complete `README.md` file format for **Step 6: Ansible Automation**, tailored to your DevOps project setup. You can copy this directly into a file named `README.md`:
-
-````markdown
 
 # 🔧 Step 6: Ansible Automation
 

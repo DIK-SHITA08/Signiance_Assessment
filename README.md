@@ -1,143 +1,103 @@
-# Signiance Assessment - DevOps Implementation
+# 🚀 DevOps Project: Infra, Deployment & Monitoring
 
-This repository demonstrates an end-to-end DevOps workflow including infrastructure provisioning, application deployment, automation, observability, and security best practices.
-
----
-
-## 📁 Repository Structure
-
-Signiance_Assessment/
-├── app/ # Node.js application (Dockerized)
-├── k8s/ # Kubernetes manifests and Helm chart
-├── scripts/ # Shell and Ansible setup scripts
-├── terraform/ # Infrastructure provisioning
-├── .github/workflows/ # GitHub Actions CI/CD pipeline
-
+This repo shows how to set up infrastructure, secure your server, deploy a Node.js app using Docker, automate with GitHub Actions, and run it on Kubernetes with monitoring.
 
 ---
 
-## 🚀 Features Implemented
+## 🔧 Step 1: Set Up Infrastructure (Terraform)
 
-### 1. Infrastructure Provisioning (Terraform)
-- EC2 instance (Ubuntu)
-- Security groups, SSH access
-- Outputs public IP for provisioning
+1. Install Terraform and AWS CLI.
+2. Configure AWS CLI:
+   ```bash
+   aws configure
+   ```
+3. Generate SSH key:
+   ```bash
+   ssh-keygen -t rsa -b 4096 -f ~/.ssh/k3s_key
+   ```
+4. Go to `terraform/` folder and run:
+   ```bash
+   terraform init
+   terraform apply
+   ```
 
-### 2. Linux Hardening
-- Disabled root SSH login
-- Added sudo-enabled user with SSH key
-- Firewall via UFW
-- Fail2ban for intrusion prevention
-
-### 3. App Deployment
-- Node.js app with `/metrics` endpoint
-- Dockerized and pushed to Docker Hub
-
-### 4. Kubernetes + Helm
-- Helm chart to deploy app
-- Configurable via `values.yaml`
-- Pod annotations for Prometheus
-- Probes, resource limits, ConfigMaps, Secrets
-
-### 5. CI/CD Pipeline
-- GitHub Actions workflow:
-  - Build & push Docker image
-  - Deploy using Helm
-  - Secure via GitHub Secrets (`KUBECONFIG`, `DOCKER_USERNAME`, `DOCKER_PASSWORD`)
-
-### 6. Monitoring & Alerting
-- Prometheus & Grafana via Helm
-- Scraping app metrics
-- Dashboards for CPU, memory, event loop, heap
-- Alerts:
-  - CPU > 70%
-  - Pod crash/restart
-
-### 7. Ansible Automation
-- Docker, k3s, Helm installation
-- Hardening steps automated
+This will create an EC2 instance and security groups.
 
 ---
 
-## ⚙️ Prerequisites
+## 🔒 Step 2: Secure the EC2 (Linux Hardening)
 
-Ensure the following tools are installed on your local machine or provisioned VM:
-
-- **Terraform** >= v1.0.0
-- **Docker** >= v20
-- **Helm** >= v3
-- **kubectl**
-- **k3s** (or compatible Kubernetes distribution)
-- **Ansible** (for optional automation)
+1. SSH into your EC2:
+   ```bash
+   ssh -i "./.ssh/k3s_key" ubuntu@<EC2-PUBLIC-IP>
+   ```
+2. Clone this repo inside EC2 or copy scripts from `linux_hardening/`.
+3. Run the scripts to:
+   - Disable root SSH
+   - Add a non-root user
+   - Enable firewall (UFW)
+   - Setup fail2ban and logrotate
 
 ---
 
-## 🔧 Getting Started
+## 📦 Step 3: Deploy the App (Docker)
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/DIK-SHITA08/Signiance_Assessment.git
-cd Signiance_Assessment
+1. Go to the `app/` folder:
+   ```bash
+   cd app
+   docker build -t signiance-node-app .
+   docker run -p 3000:3000 signiance-node-app
+   ```
+2. Or push the image to Docker Hub.
 
-2. Provision Infrastructure with Terraform
+---
 
-cd terraform
-terraform init
-terraform apply -auto-approve
+## 🔁 Step 4: CI/CD (GitHub Actions)
 
-3. SSH into the EC2 Instance
-ssh -i <key.pem> ubuntu@<ec2-public-ip>
+1. Update `.github/workflows/ci-cd.yaml`:
+   - Add your Docker image name
+   - Set GitHub secrets: `DOCKER_USERNAME` and `DOCKER_PASSWORD`
+2. Push changes to GitHub.
+3. GitHub Actions will build and push your Docker image.
 
-4. Install K3s and Helm
-bash
-Copy
-Edit
-sudo bash scripts/setup_k3s.sh
+---
 
-🐳 Docker Image
-Build & Push
-bash
-Copy
-Edit
-docker build -t yourdockerhub/signiance-node-app:latest ./app
-docker push yourdockerhub/signiance-node-app:latest
-📦 Deploy with Helm
-bash
-Copy
-Edit
-helm upgrade --install nodejs-app ./k8s/helm/node-app --namespace default
-🤖 GitHub Actions CI/CD
-Trigger
-On push to main, the workflow will:
+## ☸️ Step 5: Run on Kubernetes (K3s + Helm)
 
-Build Docker image
+1. SSH into EC2 and run:
+   ```bash
+   chmod +x scripts/setup_k3s.sh
+   ./scripts/setup_k3s.sh
+   ```
+2. Copy your kube config and add it as a GitHub secret:
+   ```bash
+   cat ~/.kube/config | base64 -w 0
+   ```
+3. Uncomment the Helm section in the GitHub workflow and push to GitHub.
 
-Push to Docker Hub
+---
 
-Deploy to cluster using Helm
+## 📊 Step 6: Monitoring (Prometheus + Grafana)
 
-GitHub Secrets Required
-DOCKER_USERNAME
+1. Add Helm repos and install monitoring tools:
+   ```bash
+   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+   helm repo add grafana https://grafana.github.io/helm-charts
+   kubectl create namespace monitoring
 
-DOCKER_PASSWORD
+   helm install prometheus prometheus-community/prometheus --namespace monitoring
+   helm install grafana grafana/grafana --namespace monitoring --set adminPassword='admin' --set service.type=NodePort
+   ```
+2. Access Grafana and Prometheus in browser:
+   - Grafana: `http://<EC2-IP>:32000`
+   - Prometheus: `http://<EC2-IP>:32001`
 
-KUBECONFIG (base64 encoded content of ~/.kube/config)
+---
 
-📊 Observability
-Prometheus
-URL: http://<ec2-ip>:<prometheus-nodeport>/targets
+## ✅ Done!
 
-Grafana
-URL: http://<ec2-ip>:<grafana-nodeport>
+You now have a complete pipeline: Infra → Secure Server → Docker App → CI/CD → Kubernetes → Monitoring.
 
-Import Dashboard ID: 13433
+---
 
-Sample Metrics: process_cpu_seconds_total, nodejs_eventloop_lag_seconds
-
-🔁 Reproducing on a Fresh VM
-Clone repo and run Terraform
-
-SSH into instance and run the setup script
-
-Push app changes to trigger CI/CD
-
+**Note:** Use `t3.large` or better instance if you face memory issues.

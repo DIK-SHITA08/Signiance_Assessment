@@ -7,7 +7,7 @@ on:
 
 env:
   IMAGE_NAME: disidesh/signiance
-  IMAGE_TAG: latest
+  IMAGE_TAG: v1
   RELEASE_NAME: signiance-app
 
 jobs:
@@ -46,4 +46,4 @@ jobs:
 
       - name: Push Docker image
         run: docker push $IMAGE_NAME:$IMAGE_TAG
-        
+

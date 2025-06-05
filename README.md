@@ -1,3 +1,7 @@
+# Architecture diagram
+![image](https://github.com/user-attachments/assets/3a73ede3-71ce-4ebe-81e5-b72c43c0fe91)
+
+
 # 🚀 DevOps Project: Infra, Deployment & Monitoring
 
 This repo shows how to set up infrastructure, secure your server, deploy a Node.js app using Docker, automate with GitHub Actions, and run it on Kubernetes with monitoring.

@@ -78,34 +78,36 @@ Ensure the following tools are installed on your local machine or provisioned VM
 ```bash
 git clone https://github.com/DIK-SHITA08/Signiance_Assessment.git
 cd Signiance_Assessment
+```
 
 2. Provision Infrastructure with Terraform
-
+``` bash
 cd terraform
 terraform init
 terraform apply -auto-approve
+```
 
 3. SSH into the EC2 Instance
+``` bash
 ssh -i <key.pem> ubuntu@<ec2-public-ip>
+```
 
-4. Install K3s and Helm
-bash
-Copy
-Edit
+5. Install K3s and Helm
+``` bash
 sudo bash scripts/setup_k3s.sh
+```
 
 🐳 Docker Image
 Build & Push
-bash
-Copy
-Edit
+``` bash
 docker build -t yourdockerhub/signiance-node-app:latest ./app
 docker push yourdockerhub/signiance-node-app:latest
+```
 📦 Deploy with Helm
-bash
-Copy
-Edit
+``` bash
 helm upgrade --install nodejs-app ./k8s/helm/node-app --namespace default
+```
+
 🤖 GitHub Actions CI/CD
 Trigger
 On push to main, the workflow will:

@@ -13,13 +13,13 @@ app.get("/", (req, res) => {
   res.send("Hello from Signiance Node.js App!");
 });
 
-// Metrics route for Prometheus to scrape
+// Metrics route
 app.get("/metrics", async (req, res) => {
   res.set('Content-Type', register.contentType);
   res.end(await register.metrics());
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+// Important: bind to 0.0.0.0 so Prometheus can access it
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
